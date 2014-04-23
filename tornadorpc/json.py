@@ -73,7 +73,7 @@ class JSONRPCParser(BaseRPCParser):
                 continue
             rpcid = request['id']
             version = jsonrpclib.config.version
-            if 'jsonrpc' not in request.keys():
+            if 'jsonrpc' not in list(request.keys()):
                 version = 1.0
             try:
                 response_json = dumps(
@@ -125,5 +125,5 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
 
-    print 'Starting server on port %s' % port
+    print('Starting server on port %s' % port)
     start_server(TestJSONRPC, port=port)

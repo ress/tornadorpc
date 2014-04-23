@@ -17,6 +17,7 @@ import tornado.httpserver
 import types
 import traceback
 from tornadorpc.utils import getcallargs
+import collections
 
 
 # Configuration element
@@ -70,10 +71,10 @@ class BaseRPCParser(object):
         except:
             self.traceback()
             return self.handler.result(self.faults.parse_error())
-        if not isinstance(requests, types.TupleType):
+        if not isinstance(requests, tuple):
             # SHOULD be the result of a fault call,
             # according tothe parse_request spec below.
-            if isinstance(requests, basestring):
+            if isinstance(requests, str):
                 # Should be the response text of a fault
                 # This will break in Python 3.x
                 return requests
@@ -113,7 +114,7 @@ class BaseRPCParser(object):
                 method = self.check_method(attr_name, method)
         except AttributeError:
             return self.handler.result(self.faults.method_not_found())
-        if not callable(method):
+        if not isinstance(method, collections.Callable):
             # Not callable, so not a method
             return self.handler.result(self.faults.method_not_found())
         if method_name.startswith('_') or \
@@ -169,7 +170,7 @@ class BaseRPCParser(object):
         handler._RPC_finished = True
         responses = tuple(handler._results)
         response_text = self.parse_responses(responses)
-        if type(response_text) not in types.StringTypes:
+        if not isinstance(response_text, str):
             # Likely a fault, or something messed up
             response_text = self.encode(response_text)
         # Calling the async callback
@@ -186,9 +187,9 @@ class BaseRPCParser(object):
             if len(err_lines) >= 7 and config.short_errors:
                 # Minimum number of lines to see what happened
                 # Plus title and separators
-                print '\n'.join(err_lines[0:4]+err_lines[-3:])
+                print('\n'.join(err_lines[0:4]+err_lines[-3:]))
             else:
-                print '\n'.join(err_lines)
+                print('\n'.join(err_lines))
         # Log here
         return
 
@@ -314,7 +315,7 @@ class Faults(object):
 
     def __getattr__(self, attr):
         message = 'Error'
-        if attr in self.messages.keys():
+        if attr in list(self.messages.keys()):
             message = self.messages[attr]
         else:
             message = ' '.join(map(str.capitalize, attr.split('_')))
@@ -359,7 +360,7 @@ def start_server(handlers, route=r'/', port=8080):
     USAGE:
         start_server(handler_class, route=r'/', port=8181)
     """
-    if type(handlers) not in (types.ListType, types.TupleType):
+    if type(handlers) not in (list, tuple):
         handler = handlers
         handlers = [(route, handler)]
         if route != '/RPC2':

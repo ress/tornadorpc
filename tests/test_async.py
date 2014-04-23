@@ -5,7 +5,7 @@ from tornado.testing import AsyncHTTPTestCase
 import tornado.web
 from tornadorpc import async
 from tornadorpc.xml import XMLRPCHandler
-import xmlrpclib
+import xmlrpc.client
 
 
 class AsyncHandler(XMLRPCHandler, TestHandler):
@@ -22,7 +22,8 @@ class AsyncHandler(XMLRPCHandler, TestHandler):
         return 5
 
     def _handle_response(self, response):
-        self.result(json.loads(response.body))
+        print(response.body)
+        self.result(json.loads(str(response.body, encoding="utf-8")))
 
 
 class AsyncXMLRPCClient(object):
@@ -40,9 +41,9 @@ class AsyncXMLRPCClient(object):
             raise Exception(
                 "Can't have both keyword and positional arguments.")
         arguments = params or keyword_params
-        body = xmlrpclib.dumps(arguments, methodname=method)
+        body = xmlrpc.client.dumps(arguments, methodname=method)
         response = self._fetcher(self._url, method="POST", body=body)
-        result, _ = xmlrpclib.loads(response.body)
+        result, _ = xmlrpc.client.loads(response.body)
         return result[0]
 
 
@@ -90,5 +91,5 @@ class AsyncTests(AsyncHTTPTestCase):
             client.bad_async_method(
                 "http://localhost:%d/" % (self.get_http_port()))
             self.fail("xmlrpclib.Fault should have been raised.")
-        except xmlrpclib.Fault, fault:
+        except xmlrpc.client.Fault as fault:
             self.assertEqual(-32603, fault.faultCode)

@@ -20,7 +20,7 @@ from version 2.3 on.
 """
 
 from tornadorpc.base import BaseRPCParser, BaseRPCHandler
-import xmlrpclib
+import xmlrpc.client
 
 
 class XMLRPCSystem(object):
@@ -42,7 +42,7 @@ class XMLRPCParser(BaseRPCParser):
 
     def parse_request(self, request_body):
         try:
-            params, method_name = xmlrpclib.loads(request_body)
+            params, method_name = xmlrpc.client.loads(request_body)
         except:
             # Bad request formatting, bad.
             return self.faults.parse_error()
@@ -50,12 +50,12 @@ class XMLRPCParser(BaseRPCParser):
 
     def parse_responses(self, responses):
         try:
-            if isinstance(responses[0], xmlrpclib.Fault):
-                return xmlrpclib.dumps(responses[0])
+            if isinstance(responses[0], xmlrpc.client.Fault):
+                return xmlrpc.client.dumps(responses[0])
         except IndexError:
             pass
         try:
-            response_xml = xmlrpclib.dumps(responses, methodresponse=True)
+            response_xml = xmlrpc.client.dumps(responses, methodresponse=True)
         except TypeError:
             return self.faults.internal_error()
         return response_xml
@@ -66,7 +66,7 @@ class XMLRPCHandler(BaseRPCHandler):
     Subclass this to add methods -- you can treat them
     just like normal methods, this handles the XML formatting.
     """
-    _RPC_ = XMLRPCParser(xmlrpclib)
+    _RPC_ = XMLRPCParser(xmlrpc.client)
 
     @property
     def system(self):
@@ -83,11 +83,11 @@ if __name__ == '__main__':
         port = int(sys.argv[1])
 
     class TestXMLRPC(TestRPCHandler):
-        _RPC_ = XMLRPCParser(xmlrpclib)
+        _RPC_ = XMLRPCParser(xmlrpc.client)
 
         @property
         def system(self):
             return XMLRPCSystem(self)
 
-    print 'Starting server on port %s' % port
+    print('Starting server on port %s' % port)
     start_server(TestXMLRPC, port=port)

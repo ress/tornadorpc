@@ -18,20 +18,20 @@ def getcallargs(func, *positional, **named):
 
     final_kwargs = {}
     extra_args = []
-    has_self = inspect.ismethod(func) and func.im_self is not None
+    has_self = inspect.ismethod(func) and func.__self__ is not None
     if has_self:
         args.pop(0)
 
     # (Since our RPC supports only positional OR named.)
     if named:
-        for key, value in named.iteritems():
+        for key, value in named.items():
             arg_key = None
             try:
                 arg_key = args[args.index(key)]
             except ValueError:
                 if not varkw:
                     raise TypeError("Keyword argument '%s' not valid" % key)
-            if key in final_kwargs.keys():
+            if key in list(final_kwargs.keys()):
                 message = "Keyword argument '%s' used more than once" % key
                 raise TypeError(message)
             final_kwargs[key] = value
