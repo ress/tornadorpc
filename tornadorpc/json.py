@@ -27,7 +27,7 @@ distribution as the "json" module.
 """
 
 from tornadorpc.base import BaseRPCParser, BaseRPCHandler
-import jsonrpclib
+import jsonrpclib, six
 from jsonrpclib.jsonrpc import isbatch, isnotification, Fault
 from jsonrpclib.jsonrpc import dumps, loads
 
@@ -38,11 +38,12 @@ class JSONRPCParser(BaseRPCParser):
 
     def parse_request(self, request_body):
         try:
-            request = loads(request_body)
+            request = loads(request_body.decode('utf-8'))
         except:
             # Bad request formatting
             self.traceback()
             return self.faults.parse_error()
+
         self._requests = request
         self._batch = False
         request_list = []
