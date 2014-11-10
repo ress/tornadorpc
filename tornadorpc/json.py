@@ -72,7 +72,7 @@ class JSONRPCParser(BaseRPCParser):
                 # response entry
                 continue
             rpcid = request['id']
-            version = jsonrpclib.config.version
+            version = jsonrpclib.config.DEFAULT.version
             if 'jsonrpc' not in list(request.keys()):
                 version = 1.0
             try:
